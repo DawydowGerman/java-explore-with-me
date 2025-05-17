@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>stats-client</artifactId>
-    <name>stats-dto</name>
+    <name>stats-client</name>
 
     <dependencies>
         <dependency>
