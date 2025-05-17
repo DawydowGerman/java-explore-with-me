@@ -13,8 +13,7 @@ public interface HitJPARepository extends JpaRepository<Hit, Long> {
     @Query(value = "SELECT * " +
             "FROM hits " +
             "WHERE timestamp BETWEEN (:start) AND (:end) " +
-            "ORDER BY timestamp"
-            , nativeQuery = true)
+            "ORDER BY timestamp", nativeQuery = true)
     List<Hit> findAllByTimestampBetween(@Param("start")LocalDateTime start, @Param("end")LocalDateTime end);
 
     @Query(value = "SELECT * " +
@@ -22,8 +21,7 @@ public interface HitJPARepository extends JpaRepository<Hit, Long> {
             "WHERE timestamp " +
             "BETWEEN (:start) AND (:end) " +
             "AND uri IN (:uris) " +
-            "ORDER BY timestamp"
-            , nativeQuery = true)
+            "ORDER BY timestamp", nativeQuery = true)
     List<Hit> findAllByTimestampBetweenAndUriIn(@Param("start")LocalDateTime start, @Param("end")LocalDateTime end,
                                                 @Param("uris")List<String> uris);
 }
