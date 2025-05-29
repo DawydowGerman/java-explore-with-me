@@ -45,4 +45,24 @@ public class HitClient {
 
         return List.of(response.getBody());
     }
+
+    public long getHitCountForIp(String uri, String ip) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(serverUrl + "/stats/ip")
+                .queryParam("start", LocalDateTime.now().minusYears(1))
+                .queryParam("end", LocalDateTime.now())
+                .queryParam("uri", uri)
+                .queryParam("ip", ip);
+        ResponseEntity<Long> response = restTemplate.getForEntity(
+                builder.toUriString(),
+                Long.class);
+        return response.getBody() != null ? response.getBody() : 0L;
+    }
+
+    public long getTotalViewsForUri(String uri) {
+        return restTemplate.getForObject(
+                serverUrl + "/stats/total?uri={uri}",
+                Long.class,
+                uri
+        );
+    }
 }

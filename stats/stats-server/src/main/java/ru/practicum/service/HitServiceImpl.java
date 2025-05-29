@@ -89,4 +89,15 @@ public class HitServiceImpl implements HitService {
         statsList.sort((o1, o2) -> Long.compare(o2.getHits(), o1.getHits()));
         return statsList;
     }
+
+    @Transactional
+    @Override
+    public long getHitCountForIp(LocalDateTime start, LocalDateTime end, String uri, String ip) {
+        return hitJPARepository.countByUriAndIpAndTimestampBetween(uri, ip, start, end);
+    }
+
+    @Override
+    public long countByUri(String uri) {
+        return hitJPARepository.countByUri(uri);
+    }
 }
