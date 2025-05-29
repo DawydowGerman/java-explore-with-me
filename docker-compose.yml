@@ -9,9 +9,9 @@ services:
       - stats-db
     environment:
       - SERVER_PORT=9090
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/explore
-      - SPRING_DATASOURCE_USERNAME=explore
-      - SPRING_DATASOURCE_PASSWORD=explore
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=151200postgre
 
   stats-db:
     image: postgres:17
@@ -19,9 +19,9 @@ services:
     ports:
       - "6541:5432"
     environment:
-      - POSTGRES_PASSWORD=explore
-      - POSTGRES_USER=explore
-      - POSTGRES_DB=explore
+      - POSTGRES_PASSWORD=151200postgre
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=stats
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
@@ -37,9 +37,10 @@ services:
     depends_on:
       - ewm-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/stats
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewmservice
       - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=pass
+      - SPRING_DATASOURCE_PASSWORD=151200postgre
 
   ewm-db:
     image: postgres:17
@@ -47,9 +48,9 @@ services:
     ports:
       - "6542:5432"
     environment:
-      - POSTGRES_PASSWORD=explore
-      - POSTGRES_USER=explore
-      - POSTGRES_DB=ewm
+      - POSTGRES_PASSWORD=151200postgre
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=ewmservice
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
