@@ -34,7 +34,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = CategoryMapper.toModelFromNew(newCategoryDto);
 
         if (categoryJPARepository.existsByName(newCategoryDto.getName())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "could not execute statement; SQL [n/a]; constraint ["+ newCategoryDto.getName() +"]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "could not execute statement; SQL [n/a]; constraint [" + newCategoryDto.getName() + "]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement");
         }
 
         category = categoryJPARepository.save(category);
@@ -65,7 +65,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryJPARepository.findById(catId).get();
         Category incomingCategoryByName = categoryJPARepository.findByName(newCategoryDto.getName());
         if (categoryJPARepository.existsByName(newCategoryDto.getName()) && !incomingCategoryByName.getId().equals(catId)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "could not execute statement; SQL [n/a]; constraint ["+ newCategoryDto.getName() +"]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "could not execute statement; SQL [n/a]; constraint [" + newCategoryDto.getName() + "]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement");
         }
         if (newCategoryDto.getName() != null && !newCategoryDto.getName().isBlank()) {
             category.setName(newCategoryDto.getName());

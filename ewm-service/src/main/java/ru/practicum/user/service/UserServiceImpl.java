@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
         List<User> users;
         if (ids != null && !ids.isEmpty()) {
             users = userJPARepository.findAllByIds(ids);
-        }  else if (from != null && size != null ) {
+        }  else if (from != null && size != null) {
             users = userJPARepository.findAllWithPagination(from, size);
         } else {
             users = userJPARepository.findAll();
