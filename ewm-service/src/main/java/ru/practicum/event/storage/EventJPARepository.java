@@ -40,14 +40,14 @@ public interface EventJPARepository extends JpaRepository<Event, Long> {
     @Query(value = "SELECT * FROM events " +
             "WHERE state = 1 AND " +
             "(:text IS NULL OR (annotation ILIKE CONCAT('%', :text, '%') OR description ILIKE CONCAT('%', :text, '%'))) " +
-            "AND (:categoryIds IS NULL OR category_id IN (:categoryIds)) " +
-            "AND (:paid IS NULL OR paid = :paid) " +
+            "AND (CAST(:categoryIds as BIGINT) IS NULL OR category_id IN (:categoryIds)) " +
+            "AND (CAST(:paid as BOOLEAN) IS NULL OR paid = CAST(:paid as BOOLEAN)) " +
             "AND ( " +
             "    (CAST(:rangeStart AS timestamp) IS NULL AND CAST(:rangeEnd AS timestamp) IS NULL AND event_date > CAST(:currentTimestamp AS timestamp)) " +
             "    OR  " +
             "    (CAST(:rangeStart AS timestamp) IS NOT NULL AND CAST(:rangeEnd AS timestamp) IS NOT NULL AND event_date BETWEEN CAST(:rangeStart AS timestamp) AND CAST(:rangeEnd AS timestamp)) " +
             ") " +
-            "AND ((:onlyAvailable IS NULL OR :onlyAvailable is false) OR confirmed_requests < participant_limit) " +
+            "AND ((CAST(:onlyAvailable as BOOLEAN) IS NULL OR CAST(:onlyAvailable as BOOLEAN) is false) OR confirmed_requests < participant_limit) " +
             "ORDER BY " +
             "    CASE WHEN :sort = 'EVENT_DATE' THEN event_date END, " +
             "    CASE WHEN :sort = 'VIEWS' THEN views END " +
