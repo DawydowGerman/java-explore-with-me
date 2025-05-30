@@ -13,7 +13,6 @@ import ru.practicum.event.service.EventService;
 import ru.practicum.event.service.enums.Sort;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Slf4j
