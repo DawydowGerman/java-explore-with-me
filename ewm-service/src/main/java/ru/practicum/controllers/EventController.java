@@ -36,8 +36,8 @@ public class EventController {
             @RequestParam(required = false) Sort sort,
             @RequestParam(defaultValue = "0") Integer from,
             @RequestParam(defaultValue = "10") Integer size) {
-            trackHit();
-            return eventService.getEventsPublic(
+
+        List<EventShortDto> events = eventService.getEventsPublic(
                 text,
                 categories,
                 paid,
@@ -48,35 +48,33 @@ public class EventController {
                 from,
                 size
         );
+        String uri = request.getRequestURI();
+        String ip = request.getRemoteAddr();
+        trackHit(uri, ip);
+        return events;
     }
 
     @GetMapping("/{id}")
     public EventFullDto findByIdPublic(@PathVariable(name = "id") Long id) {
         EventFullDto event = eventService.findByIdPublic(id);
 
-        checkAndIncrementViewsAsync(id);
-
-        trackHit();
-        return event;
-        /*
         String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();
-        long previousViewsFromIp = hitClient.getHitCountForIp(uri, ip);
-        if (previousViewsFromIp == 0) {
-            eventService.incrementViews(id);
-        }
-        trackHit();
-        return eventService.findByIdPublic(id);
-        */
+
+        checkAndIncrementViewsAsync(id, uri, ip);
+
+        trackHit(uri, ip);
+
+        return event;
     }
 
     @Async
-    public void trackHit() {
+    public void trackHit(String uri, String ip) {
         try {
             HitRequestDTO hitDTO = new HitRequestDTO(
                     "ewm-main-service",
-                    request.getRequestURI(),
-                    request.getRemoteAddr(),
+                    uri,
+                    ip,
                     LocalDateTime.now());
             hitClient.createEndpointHit(hitDTO);
         } catch (Exception e) {
@@ -85,10 +83,8 @@ public class EventController {
     }
 
     @Async
-    public void checkAndIncrementViewsAsync(Long eventId) {
+    public void checkAndIncrementViewsAsync(Long eventId, String uri, String ip) {
         try {
-            String uri = request.getRequestURI();
-            String ip = request.getRemoteAddr();
             if (hitClient.getHitCountForIp(uri, ip) == 0) {
                 eventService.incrementViews(eventId);
             }
