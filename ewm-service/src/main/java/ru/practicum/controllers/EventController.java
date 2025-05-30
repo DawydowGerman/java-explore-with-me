@@ -62,26 +62,13 @@ public class EventController {
         if (isRunningInCI()) {
             return event;
         }
-
+        String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();
+        trackHit(uri, ip);
 
         eventService.incrementViews(id, ip);
 
         event = eventService.findByIdPublic(id);
-
-        CompletableFuture.runAsync(() -> {
-            try {
-                HitRequestDTO hitDTO = new HitRequestDTO(
-                        "ewm-main-service",
-                        request.getRequestURI(),
-                        ip,
-                        LocalDateTime.now()
-                );
-                hitClient.createEndpointHit(hitDTO);
-            } catch (Exception e) {
-                log.debug("Failed to record hit", e);
-            }
-        });
 
         return event;
     }
