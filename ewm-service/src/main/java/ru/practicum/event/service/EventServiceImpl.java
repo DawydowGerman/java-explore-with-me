@@ -376,4 +376,10 @@ public class EventServiceImpl implements EventService {
             throw new ValidationException("rangeStart must be before rangeEnd");
         }
     }
+
+    @Transactional
+    public EventFullDto getEventWithViewsIncremented(Long id) {
+        incrementViews(id);
+        return findByIdPublic(id);
+    }
 }

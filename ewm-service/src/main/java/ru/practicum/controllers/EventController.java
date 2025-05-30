@@ -56,12 +56,19 @@ public class EventController {
 
     @GetMapping("/{id}")
     public EventFullDto findByIdPublic(@PathVariable(name = "id") Long id) {
-        EventFullDto event = eventService.findByIdPublic(id);
-
         String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();
 
-        checkAndIncrementViewsAsync(id, uri, ip);
+        boolean shouldIncrement = true;
+        try {
+            shouldIncrement = hitClient.getHitCountForIp(uri, ip) == 0;
+        } catch (Exception e) {
+            log.error("Stats service unavailable, incrementing views", e);
+        }
+
+        EventFullDto event = shouldIncrement
+                ? eventService.getEventWithViewsIncremented(id)
+                : eventService.findByIdPublic(id);
 
         trackHit(uri, ip);
 

@@ -43,4 +43,6 @@ public interface EventService {
     EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateRequest);
 
     void incrementViews(Long eventId);
+
+    EventFullDto getEventWithViewsIncremented(Long id);
 }
