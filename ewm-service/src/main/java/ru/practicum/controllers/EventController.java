@@ -58,6 +58,37 @@ public class EventController {
 
     @GetMapping("/{id}")
     public EventFullDto findByIdPublic(@PathVariable(name = "id") Long id) {
+        log.debug("CI Environment: {}", System.getenv("CI"));
+        log.debug("GITHUB_ACTIONS: {}", System.getenv("GITHUB_ACTIONS"));
+
+        EventFullDto event = eventService.findByIdPublic(id);
+        log.debug("Initial views: {}", event.getViews());
+
+        String uri = request.getRequestURI();
+        String ip = request.getRemoteAddr();
+        log.debug("Request from IP: {}", ip);
+
+        try {
+            long hitCount = hitClient.getHitCountForIp(uri, ip);
+            log.debug("Stats service response: {}", hitCount);
+            if (hitCount == 0) {
+                eventService.incrementViews(id);
+                event = eventService.findByIdPublic(id);
+                log.debug("After increment - views: {}", event.getViews());
+            }
+        } catch (Exception e) {
+            log.debug("Stats service unavailable", e);
+            eventService.incrementViews(id);
+            event = eventService.findByIdPublic(id);
+            log.debug("Fallback increment - views: {}", event.getViews());
+        }
+        CompletableFuture.runAsync(() -> {
+            log.debug("Tracking hit for URI: {}", uri);
+            trackHit(uri, ip);
+        });
+
+        return event;
+        /*
         EventFullDto event = eventService.findByIdPublic(id);
         if (isRunningInCITestEnvironment()) {
             return event;
@@ -69,7 +100,7 @@ public class EventController {
         try {
             if (hitClient.getHitCountForIp(uri, ip) == 0) {
                 eventService.incrementViews(id);
-                event = eventService.findByIdPublic(id); // Refresh
+                event = eventService.findByIdPublic(id);
             }
         } catch (Exception e) {
             log.warn("Stats service unavailable - skipping view increment for test");
@@ -78,6 +109,8 @@ public class EventController {
         CompletableFuture.runAsync(() -> trackHit(uri, ip));
 
         return event;
+
+         */
     }
 
     @Async
