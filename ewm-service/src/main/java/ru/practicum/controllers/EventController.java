@@ -13,11 +13,7 @@ import ru.practicum.event.service.EventService;
 import ru.practicum.event.service.enums.Sort;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-
 import jakarta.servlet.http.HttpServletRequest;
 
 @Slf4j
@@ -29,7 +25,6 @@ public class EventController {
     private final EventService eventService;
     private final HitClient hitClient;
     private final HttpServletRequest request;
-    private final Map<Long, Set<String>> eventViewers = new ConcurrentHashMap<>();
 
     @GetMapping
     public List<EventShortDto> getEventsPublic(
@@ -71,8 +66,9 @@ public class EventController {
         String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();
 
-    //    String viewKey = "viewCounted:" + ip;
-        if (eventViewers.computeIfAbsent(id, k -> ConcurrentHashMap.newKeySet()).add(ip)) {
+        String viewKey = "viewCounted:" + ip;
+        if (request.getAttribute(viewKey) == null) {
+            request.setAttribute(viewKey, true);
             eventService.incrementViews(id);
             event = eventService.findByIdPublic(id);
         }
