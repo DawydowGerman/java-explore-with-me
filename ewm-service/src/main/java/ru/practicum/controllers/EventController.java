@@ -66,8 +66,9 @@ public class EventController {
         String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();
 
-        if (request.getAttribute("viewCounted") == null) {
-            request.setAttribute("viewCounted", true);
+        String viewKey = "viewCounted:" + ip;
+        if (request.getAttribute(viewKey) == null) {
+            request.setAttribute(viewKey, true);
             eventService.incrementViews(id);
             event = eventService.findByIdPublic(id);
         }
