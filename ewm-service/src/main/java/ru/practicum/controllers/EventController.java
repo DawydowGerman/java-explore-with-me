@@ -13,9 +13,7 @@ import ru.practicum.event.service.EventService;
 import ru.practicum.event.service.enums.Sort;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Slf4j
@@ -27,7 +25,6 @@ public class EventController {
     private final EventService eventService;
     private final HitClient hitClient;
     private final HttpServletRequest request;
-    private final ConcurrentHashMap<Long, Set<String>> eventViewIps = new ConcurrentHashMap<>();
 
     @GetMapping
     public List<EventShortDto> getEventsPublic(
@@ -66,24 +63,24 @@ public class EventController {
             return event;
         }
 
+        String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();
 
-        boolean isNewViewer = eventViewIps.computeIfAbsent(id, k -> ConcurrentHashMap.newKeySet()).add(ip);
-
-        if (isNewViewer) {
+        if (request.getAttribute("viewCounted") == null) {
+            request.setAttribute("viewCounted", true);
             eventService.incrementViews(id);
-            event = eventService.findByIdPublic(id); // Refresh data
+            event = eventService.findByIdPublic(id);
         }
 
-        String uri = request.getRequestURI();
         CompletableFuture.runAsync(() -> {
             try {
-                hitClient.createEndpointHit(new HitRequestDTO(
+                HitRequestDTO hitDTO = new HitRequestDTO(
                         "ewm-main-service",
                         uri,
                         ip,
                         LocalDateTime.now()
-                ));
+                );
+                hitClient.createEndpointHit(hitDTO);
             } catch (Exception e) {
                 log.debug("Failed to record hit", e);
             }
