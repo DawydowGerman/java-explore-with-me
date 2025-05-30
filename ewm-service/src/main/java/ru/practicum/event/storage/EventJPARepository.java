@@ -80,11 +80,4 @@ public interface EventJPARepository extends JpaRepository<Event, Long> {
 
     @Query(value = "SELECT EXISTS(SELECT 1 FROM events WHERE category_id = :id)", nativeQuery = true)
     boolean existsByCategory(@Param("id") Long id);
-
-    @Modifying
-    @Query("UPDATE Event e SET e.views = e.views + 1 WHERE e.id = :id")
-    void incrementViews(@Param("id") Long id);
-
-    Optional<Event> findByIdAndState(Long id, State state);
-
 }

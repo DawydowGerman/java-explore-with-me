@@ -61,7 +61,7 @@ public class EventController {
         String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();
 
-        eventService.incrementViews(id);
+        checkAndIncrementViewsAsync(id, uri, ip);
 
         trackHit(uri, ip);
 
