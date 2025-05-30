@@ -52,6 +52,13 @@ public class EventController {
 
     @GetMapping("/{id}")
     public EventFullDto findByIdPublic(@PathVariable(name = "id") Long id) {
+        EventFullDto event = eventService.findByIdPublic(id);
+
+        checkAndIncrementViewsAsync(id);
+
+        trackHit();
+        return event;
+        /*
         String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();
         long previousViewsFromIp = hitClient.getHitCountForIp(uri, ip);
@@ -60,6 +67,7 @@ public class EventController {
         }
         trackHit();
         return eventService.findByIdPublic(id);
+        */
     }
 
     @Async
@@ -73,6 +81,19 @@ public class EventController {
             hitClient.createEndpointHit(hitDTO);
         } catch (Exception e) {
             log.error("Failed to record hit to stats service", e);
+        }
+    }
+
+    @Async
+    public void checkAndIncrementViewsAsync(Long eventId) {
+        try {
+            String uri = request.getRequestURI();
+            String ip = request.getRemoteAddr();
+            if (hitClient.getHitCountForIp(uri, ip) == 0) {
+                eventService.incrementViews(eventId);
+            }
+        } catch (Exception e) {
+            log.error("View counting failed", e);
         }
     }
 }
