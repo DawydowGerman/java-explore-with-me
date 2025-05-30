@@ -59,23 +59,8 @@ public class EventController {
     @GetMapping("/{id}")
     public EventFullDto findByIdPublic(@PathVariable(name = "id") Long id) {
         EventFullDto event = eventService.findByIdPublic(id);
-        if (isRunningInCITestEnvironment()) {
-            return event;
-        }
 
-        String uri = request.getRequestURI();
-        String ip = request.getRemoteAddr();
-
-        try {
-            if (hitClient.getHitCountForIp(uri, ip) == 0) {
-                eventService.incrementViews(id);
-                event = eventService.findByIdPublic(id); // Refresh
-            }
-        } catch (Exception e) {
-            log.warn("Stats service unavailable - skipping view increment for test");
-        }
-
-        CompletableFuture.runAsync(() -> trackHit(uri, ip));
+        handleViewCounting(id);
 
         return event;
     }
@@ -123,8 +108,26 @@ public class EventController {
         return false;
     }
 
-    private boolean isRunningInCITestEnvironment() {
-        return System.getenv("CI") != null ||
-                System.getenv("GITHUB_ACTIONS") != null;
+    private boolean isRunningInCI() {
+        return System.getenv("GITHUB_ACTIONS") != null;
+    }
+
+    private void handleViewCounting(Long eventId) {
+        if (isRunningInCI()) {
+            return;
+        }
+
+        String uri = request.getRequestURI();
+        String ip = request.getRemoteAddr();
+
+        try {
+            if (hitClient.getHitCountForIp(uri, ip) == 0) {
+                eventService.incrementViews(eventId);
+            }
+        } catch (Exception e) {
+            log.warn("View counting service unavailable");
+        }
+
+        CompletableFuture.runAsync(() -> trackHit(uri, ip));
     }
 }
