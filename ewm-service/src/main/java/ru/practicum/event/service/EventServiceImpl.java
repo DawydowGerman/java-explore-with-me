@@ -215,9 +215,9 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     public EventFullDto findByIdPublic(Long id) {
-        return eventJPARepository.findWithCreatorCategoryLocationById(id)
-                .map(EventMapper::toFullDto)
+        Event event = eventJPARepository.findByIdPublic(id)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
+        return EventMapper.toFullDto(event);
     }
 
     @Transactional
@@ -336,7 +336,10 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     public void incrementViews(Long eventId) {
-        eventJPARepository.incrementViewsNative(eventId);
+        Event event = eventJPARepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event not found"));
+        event.setViews(event.getViews() + 1);
+        eventJPARepository.save(event);
     }
 
     private State parseState(String stateName) {
