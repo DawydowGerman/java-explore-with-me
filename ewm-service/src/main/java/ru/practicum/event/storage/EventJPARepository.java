@@ -6,8 +6,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.event.model.Event;
-import ru.practicum.event.model.enums.State;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
