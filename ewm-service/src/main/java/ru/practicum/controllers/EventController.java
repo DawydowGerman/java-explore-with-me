@@ -2,6 +2,7 @@ package ru.practicum.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.client.HitClient;
@@ -61,12 +62,17 @@ public class EventController {
         return eventService.findByIdPublic(id);
     }
 
-    private void trackHit() {
-        HitRequestDTO hitDTO = new HitRequestDTO(
-                "ewm-main-service",
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                LocalDateTime.now());
-        hitClient.createEndpointHit(hitDTO);
+    @Async
+    public void trackHit() {
+        try {
+            HitRequestDTO hitDTO = new HitRequestDTO(
+                    "ewm-main-service",
+                    request.getRequestURI(),
+                    request.getRemoteAddr(),
+                    LocalDateTime.now());
+            hitClient.createEndpointHit(hitDTO);
+        } catch (Exception e) {
+            log.error("Failed to record hit to stats service", e);
+        }
     }
 }
