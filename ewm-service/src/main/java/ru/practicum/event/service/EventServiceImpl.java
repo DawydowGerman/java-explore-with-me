@@ -213,6 +213,7 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public EventFullDto findByIdPublic(Long id) {
         Event event = eventJPARepository.findByIdPublic(id)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
@@ -333,6 +334,7 @@ public class EventServiceImpl implements EventService {
        return result;
    }
 
+    @Transactional
     public void incrementViews(Long eventId) {
         Event event = eventJPARepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
