@@ -6,6 +6,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.event.model.Event;
+import ru.practicum.event.model.enums.State;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -78,4 +80,11 @@ public interface EventJPARepository extends JpaRepository<Event, Long> {
 
     @Query(value = "SELECT EXISTS(SELECT 1 FROM events WHERE category_id = :id)", nativeQuery = true)
     boolean existsByCategory(@Param("id") Long id);
+
+    @Modifying
+    @Query("UPDATE Event e SET e.views = e.views + 1 WHERE e.id = :id")
+    void incrementViews(@Param("id") Long id);
+
+    Optional<Event> findByIdAndState(Long id, State state);
+
 }

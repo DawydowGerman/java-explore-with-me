@@ -214,8 +214,8 @@ public class EventServiceImpl implements EventService {
     }
 
     public EventFullDto findByIdPublic(Long id) {
-        Event event = eventJPARepository.findByIdPublic(id)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
+        Event event = eventJPARepository.findByIdAndState(id, State.PUBLISHED)
+                .orElseThrow(() -> new NotFoundException("Event not found"));
         return EventMapper.toFullDto(event);
     }
 
@@ -334,10 +334,7 @@ public class EventServiceImpl implements EventService {
    }
 
     public void incrementViews(Long eventId) {
-        Event event = eventJPARepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event not found"));
-        event.setViews(event.getViews() + 1);
-        eventJPARepository.save(event);
+        eventJPARepository.incrementViews(eventId);
     }
 
     private State parseState(String stateName) {
