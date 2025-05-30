@@ -14,11 +14,13 @@ import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.mapper.LocationMapper;
 import ru.practicum.event.mapper.RequestMapper;
 import ru.practicum.event.model.Event;
+import ru.practicum.event.model.EventView;
 import ru.practicum.event.model.Location;
 import ru.practicum.event.model.Request;
 import ru.practicum.event.model.enums.State;
 import ru.practicum.event.service.enums.Sort;
 import ru.practicum.event.storage.EventJPARepository;
+import ru.practicum.event.storage.EventViewJPARepository;
 import ru.practicum.event.storage.LocationJPARepository;
 import ru.practicum.event.storage.RequestJPARepository;
 import ru.practicum.exception.ConstraintException;
@@ -38,18 +40,20 @@ public class EventServiceImpl implements EventService {
     private final UserJPARepository userJPARepository;
     private final CategoryJPARepository categoryJPARepository;
     private final RequestJPARepository requestJPARepository;
+    private final EventViewJPARepository eventViewJPARepository;
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     public EventServiceImpl(EventJPARepository eventJPARepository,
                             LocationJPARepository locationJPARepository,
                             UserJPARepository userJPARepository, CategoryJPARepository categoryJPARepository,
-                            RequestJPARepository requestJPARepository) {
+                            RequestJPARepository requestJPARepository, EventViewJPARepository eventViewJPARepository) {
         this.eventJPARepository = eventJPARepository;
         this.locationJPARepository = locationJPARepository;
         this.userJPARepository = userJPARepository;
         this.categoryJPARepository = categoryJPARepository;
         this.requestJPARepository = requestJPARepository;
+        this.eventViewJPARepository = eventViewJPARepository;
     }
 
     @Transactional
@@ -334,6 +338,7 @@ public class EventServiceImpl implements EventService {
        return result;
    }
 
+/*
     @Transactional
     public void incrementViews(Long eventId) {
         Event event = eventJPARepository.findById(eventId)
@@ -341,6 +346,7 @@ public class EventServiceImpl implements EventService {
         event.setViews(event.getViews() + 1);
         eventJPARepository.save(event);
     }
+ */
 
     private State parseState(String stateName) {
         try {
@@ -378,8 +384,14 @@ public class EventServiceImpl implements EventService {
     }
 
     @Transactional
-    public EventFullDto getEventWithViewsIncremented(Long id) {
-        incrementViews(id);
-        return findByIdPublic(id);
+    public void incrementViews(Long eventId, String ip) {
+        if (!eventViewJPARepository.existsByEventIdAndIp(eventId, ip)) {
+            eventViewJPARepository.save(new EventView(eventId, ip, LocalDateTime.now()));
+
+            Event event = eventJPARepository.findById(eventId)
+                    .orElseThrow(() -> new NotFoundException("Event not found"));
+            event.setViews(event.getViews() + 1);
+            eventJPARepository.save(event);
+        }
     }
 }

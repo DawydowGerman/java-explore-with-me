@@ -63,21 +63,17 @@ public class EventController {
             return event;
         }
 
-        String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();
 
-        String viewKey = "viewCounted:" + ip;
-        if (request.getAttribute(viewKey) == null) {
-            request.setAttribute(viewKey, true);
-            eventService.incrementViews(id);
-            event = eventService.findByIdPublic(id);
-        }
+        eventService.incrementViews(id, ip);
+
+        event = eventService.findByIdPublic(id);
 
         CompletableFuture.runAsync(() -> {
             try {
                 HitRequestDTO hitDTO = new HitRequestDTO(
                         "ewm-main-service",
-                        uri,
+                        request.getRequestURI(),
                         ip,
                         LocalDateTime.now()
                 );
@@ -102,34 +98,6 @@ public class EventController {
         } catch (Exception e) {
             log.error("Failed to record hit to stats service", e);
         }
-    }
-
-    @Async
-    public void checkAndIncrementViewsAsync(Long eventId, String uri, String ip) {
-        try {
-            if (hitClient.getHitCountForIp(uri, ip) == 0) {
-                eventService.incrementViews(eventId);
-            }
-        } catch (Exception e) {
-            log.error("View counting failed", e);
-        }
-    }
-
-    private boolean checkIfFirstView(String uri, String ip) {
-        try {
-            return hitClient.getHitCountForIp(uri, ip) == 0;
-        } catch (Exception e) {
-            return isFirstViewThisRequest(uri, ip);
-        }
-    }
-
-    private boolean isFirstViewThisRequest(String uri, String ip) {
-        String key = uri + ":" + ip;
-        if (request.getAttribute(key) == null) {
-            request.setAttribute(key, "viewed");
-            return true;
-        }
-        return false;
     }
 
     private boolean isRunningInCI() {

@@ -67,3 +67,11 @@ CREATE TABLE IF NOT EXISTS compilation_events (
   FOREIGN KEY (compilation_id) REFERENCES compilations(id) ON DELETE CASCADE,
   FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS event_views (
+    event_id BIGINT NOT NULL,
+    ip VARCHAR(45) NOT NULL,
+    viewed_at TIMESTAMP(6) NOT NULL,
+    CONSTRAINT pk_event_view PRIMARY KEY (event_id, ip),
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+);
