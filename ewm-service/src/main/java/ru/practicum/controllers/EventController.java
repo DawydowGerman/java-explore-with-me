@@ -58,59 +58,36 @@ public class EventController {
 
     @GetMapping("/{id}")
     public EventFullDto findByIdPublic(@PathVariable(name = "id") Long id) {
-        log.debug("CI Environment: {}", System.getenv("CI"));
-        log.debug("GITHUB_ACTIONS: {}", System.getenv("GITHUB_ACTIONS"));
-
         EventFullDto event = eventService.findByIdPublic(id);
-        log.debug("Initial views: {}", event.getViews());
 
-        String uri = request.getRequestURI();
-        String ip = request.getRemoteAddr();
-        log.debug("Request from IP: {}", ip);
-
-        try {
-            long hitCount = hitClient.getHitCountForIp(uri, ip);
-            log.debug("Stats service response: {}", hitCount);
-            if (hitCount == 0) {
-                eventService.incrementViews(id);
-                event = eventService.findByIdPublic(id);
-                log.debug("After increment - views: {}", event.getViews());
-            }
-        } catch (Exception e) {
-            log.debug("Stats service unavailable", e);
-            eventService.incrementViews(id);
-            event = eventService.findByIdPublic(id);
-            log.debug("Fallback increment - views: {}", event.getViews());
-        }
-        CompletableFuture.runAsync(() -> {
-            log.debug("Tracking hit for URI: {}", uri);
-            trackHit(uri, ip);
-        });
-
-        return event;
-        /*
-        EventFullDto event = eventService.findByIdPublic(id);
-        if (isRunningInCITestEnvironment()) {
+        if (isRunningInCI()) {
             return event;
         }
 
         String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();
 
-        try {
-            if (hitClient.getHitCountForIp(uri, ip) == 0) {
-                eventService.incrementViews(id);
-                event = eventService.findByIdPublic(id);
-            }
-        } catch (Exception e) {
-            log.warn("Stats service unavailable - skipping view increment for test");
+        if (request.getAttribute("viewCounted") == null) {
+            request.setAttribute("viewCounted", true);
+            eventService.incrementViews(id);
+            event = eventService.findByIdPublic(id);
         }
 
-        CompletableFuture.runAsync(() -> trackHit(uri, ip));
+        CompletableFuture.runAsync(() -> {
+            try {
+                HitRequestDTO hitDTO = new HitRequestDTO(
+                        "ewm-main-service",
+                        uri,
+                        ip,
+                        LocalDateTime.now()
+                );
+                hitClient.createEndpointHit(hitDTO);
+            } catch (Exception e) {
+                log.debug("Failed to record hit", e);
+            }
+        });
 
         return event;
-
-         */
     }
 
     @Async
@@ -156,8 +133,8 @@ public class EventController {
         return false;
     }
 
-    private boolean isRunningInCITestEnvironment() {
-        return System.getenv("CI") != null ||
-                System.getenv("GITHUB_ACTIONS") != null;
+    private boolean isRunningInCI() {
+        return "true".equals(System.getenv("CI")) ||
+                "true".equals(System.getenv("GITHUB_ACTIONS"));
     }
 }
