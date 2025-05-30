@@ -13,6 +13,8 @@ import ru.practicum.event.service.EventService;
 import ru.practicum.event.service.enums.Sort;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 @Slf4j
@@ -59,18 +61,16 @@ public class EventController {
         String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();
 
-        boolean shouldIncrement = true;
-        try {
-            shouldIncrement = hitClient.getHitCountForIp(uri, ip) == 0;
-        } catch (Exception e) {
-            log.error("Stats service unavailable, incrementing views", e);
+        EventFullDto event = eventService.findByIdPublic(id);
+
+        boolean shouldIncrement = checkIfFirstView(uri, ip);
+
+        if (shouldIncrement) {
+            eventService.incrementViews(id);
+            event = eventService.findByIdPublic(id);
         }
 
-        EventFullDto event = shouldIncrement
-                ? eventService.getEventWithViewsIncremented(id)
-                : eventService.findByIdPublic(id);
-
-        trackHit(uri, ip);
+        CompletableFuture.runAsync(() -> trackHit(uri, ip));
 
         return event;
     }
@@ -98,5 +98,23 @@ public class EventController {
         } catch (Exception e) {
             log.error("View counting failed", e);
         }
+    }
+
+    private boolean checkIfFirstView(String uri, String ip) {
+        try {
+            return hitClient.getHitCountForIp(uri, ip) == 0;
+        } catch (Exception e) {
+            return isFirstViewThisRequest(uri, ip);
+        }
+    }
+
+
+    private boolean isFirstViewThisRequest(String uri, String ip) {
+        String key = uri + ":" + ip;
+        if (request.getAttribute(key) == null) {
+            request.setAttribute(key, "viewed");
+            return true;
+        }
+        return false;
     }
 }
