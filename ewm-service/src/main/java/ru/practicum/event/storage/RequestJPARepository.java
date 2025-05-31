@@ -5,12 +5,10 @@ import org.springframework.data.jpa.repository.Modifying;
 import ru.practicum.event.model.Request;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 import ru.practicum.event.model.enums.Status;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface RequestJPARepository extends JpaRepository<Request, Long> {
     @Query(value = "SELECT * FROM requests WHERE id = :id AND requester = :requester", nativeQuery = true)
     Optional<Request> findByRequesterIdAndEventId(@Param("requester")Long requester, @Param("id")Long id);

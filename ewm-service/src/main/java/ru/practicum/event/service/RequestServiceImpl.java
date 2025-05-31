@@ -129,8 +129,12 @@ public class RequestServiceImpl implements RequestService {
                 Request request = allRequestedRequests.get(i);
                 request.setStatus(Status.CONFIRMED);
                 confirmedRequestsList.add(request);
-                eventJPARepository.incrementConfirmedRequests(eventId, confirmedRequestsList.size());
-                System.out.println("confirmedRequestsList size: " + confirmedRequestsList.size());
+            }
+            if (!confirmedRequestsList.isEmpty()) {
+                eventJPARepository.incrementConfirmedRequests(
+                        eventId,
+                        confirmedRequestsList.size()
+                );
             }
             if (requestsToConfirm < allRequestedRequests.size()) {
                 for (int i = requestsToConfirm; i < allRequestedRequests.size(); i++) {
