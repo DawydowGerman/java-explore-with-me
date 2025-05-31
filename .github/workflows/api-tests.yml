@@ -6,3 +6,5 @@ on:
 jobs:
   build:
     uses: yandex-praktikum/java-explore-with-me/.github/workflows/api-tests.yml@ci
+    env:
+      COMPOSE_PARALLEL_LIMIT: "1"
