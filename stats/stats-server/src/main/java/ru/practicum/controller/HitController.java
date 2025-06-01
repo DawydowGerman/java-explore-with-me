@@ -36,4 +36,18 @@ public class HitController {
             @RequestParam(defaultValue = "false") boolean unique) {
         return hitService.getStats(start, end, uris, unique);
     }
+
+    @GetMapping("/stats/ip")
+    public long getHitCountForIp(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
+            @RequestParam String uri,
+            @RequestParam String ip) {
+        return hitService.getHitCountForIp(start, end, uri, ip);
+    }
+
+    @GetMapping("/stats/total")
+    public long getTotalViews(@RequestParam String uri) {
+        return hitService.countByUri(uri);
+    }
 }

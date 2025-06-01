@@ -10,4 +10,8 @@ public interface HitService {
 
     List<StatsDto> getStats(LocalDateTime start, LocalDateTime end,
                             List<String> uris, boolean unique);
+
+    long getHitCountForIp(LocalDateTime start, LocalDateTime end, String uri, String ip);
+
+    long countByUri(String uri);
 }
