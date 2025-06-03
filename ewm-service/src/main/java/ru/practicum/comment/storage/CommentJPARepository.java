@@ -50,5 +50,5 @@ public interface CommentJPARepository extends JpaRepository<Comment, Long> {
     Optional<Comment> getCommentByAuthorIdAndCommentId(@Param("authorId") Long authorId, @Param("id") Long id);
 
     @Query(value = "SELECT EXISTS(SELECT 1 FROM comments WHERE author_id = :authorId AND id = :id)", nativeQuery = true)
-    boolean existsByAuthorIdAndId(@Param("authorId") Long author_id, @Param("id") Long id);
+    boolean existsByAuthorIdAndId(@Param("authorId") Long authorId, @Param("id") Long id);
 }
