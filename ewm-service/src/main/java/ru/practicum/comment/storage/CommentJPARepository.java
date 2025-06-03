@@ -49,17 +49,6 @@ public interface CommentJPARepository extends JpaRepository<Comment, Long> {
     @Query(value = "SELECT * FROM comments WHERE author_id = :authorId AND id = :id", nativeQuery = true)
     Optional<Comment> getCommentByAuthorIdAndCommentId(@Param("authorId") Long authorId, @Param("id") Long id);
 
-    @Query(value = "SELECT EXISTS(SELECT 1 FROM comments WHERE author_id = :author_id AND id = :id)", nativeQuery = true)
-    boolean existsByAuthorIdAndId(@Param("author_id") Long author_id, @Param("id") Long id);
-
-
-
-    /*
-    @Query(value = "SELECT * FROM comments WHERE event_id = :eventId AND author_id = :authorId OFFSET :offset LIMIT :size",
-            nativeQuery = true)
-    List<Comment> findByEventIdAndAuthorId(@Param("eventId") Long eventId,
-                                           @Param("authorId") Long authorId,
-                                           @Param("offset") int offset,
-                                           @Param("size") int size);
-    */
+    @Query(value = "SELECT EXISTS(SELECT 1 FROM comments WHERE author_id = :authorId AND id = :id)", nativeQuery = true)
+    boolean existsByAuthorIdAndId(@Param("authorId") Long author_id, @Param("id") Long id);
 }
