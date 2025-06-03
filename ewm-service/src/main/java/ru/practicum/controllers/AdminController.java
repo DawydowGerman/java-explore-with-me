@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.service.CategoryService;
+import ru.practicum.comment.dto.CommentDto;
+import ru.practicum.comment.dto.NewCommentDto;
+import ru.practicum.comment.service.CommentService;
 import ru.practicum.compilation.dto.CompilationDto;
 import ru.practicum.compilation.dto.NewCompilationDto;
 import ru.practicum.compilation.service.CompilationService;
@@ -30,6 +33,7 @@ public class AdminController {
     private final CategoryService categoryService;
     private final EventService eventService;
     private final CompilationService compilationService;
+    private final CommentService commentService;
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
@@ -97,6 +101,14 @@ public class AdminController {
         return compilationService.updateCompilation(compId, newCompilationDto);
     }
 
+    @PatchMapping("/{userId}/comments/{commentId}")
+    public CommentDto updateComment(@PathVariable Long userId,
+                                    @PathVariable Long commentId,
+                                    @RequestBody @Valid NewCommentDto updateCommentDto) {
+        log.info("Updating comment {} by admin {}", commentId, userId);
+        return commentService.updateAdminComment(userId, commentId, updateCommentDto);
+    }
+
     @DeleteMapping("/categories/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeCategory(@PathVariable(name = "catId") Long id) {
@@ -116,5 +128,13 @@ public class AdminController {
     public void removeCompilation(@PathVariable(name = "compId") Long id) {
         log.info("Compilation's removal by ID: {}", id);
         compilationService.removeCompilation(id);
+    }
+
+    @DeleteMapping("/{userId}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteComment(@PathVariable Long userId,
+                              @PathVariable Long commentId) {
+        log.info("Deleting comment {} by admin {}", commentId, userId);
+        commentService.deleteAdminComment(userId, commentId);
     }
 }
